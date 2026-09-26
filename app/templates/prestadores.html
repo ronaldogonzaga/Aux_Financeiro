@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}Prestadores{% endblock %}
+{% block page_title %}Cadastro de prestadores{% endblock %}
+{% block page_desc %}
+<p class="muted">Inclua, edite, exclua ou importe médicos pela planilha.</p>
+{% endblock %}
+{% block header_actions %}
+<button type="button" class="btn btn-primary" id="btnNovo">Novo prestador</button>
+{% endblock %}
+
+{% block content %}
+<section class="panel">
+  <div class="panel-head">
+    <div>
+      <h2 class="panel-title">Importar planilha</h2>
+      <p class="panel-hint">Aceita .xlsx, .ods ou .csv com colunas Nome e E-mail.</p>
+    </div>
+    <form id="formImport" class="import-row">
+      <input type="file" name="arquivo" id="arquivoImport" accept=".xlsx,.xlsm,.ods,.csv" required>
+      <button type="submit" class="btn btn-secondary">Importar</button>
+    </form>
+  </div>
+</section>
+
+<section class="panel">
+  <div class="table-wrap">
+    <table class="data-table" id="tabelaPrestadores">
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>E-mail</th>
+          <th>Ativo</th>
+          <th style="width:140px">Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in prestadores %}
+        <tr data-id="{{ p.id }}">
+          <td>{{ p.nome }}</td>
+          <td>{{ p.email }}</td>
+          <td>{% if p.ativo %}<span class="badge ok">Sim</span>{% else %}<span class="badge off">Não</span>{% endif %}</td>
+          <td class="actions-cell">
+            <button type="button" class="btn btn-ghost btn-sm btn-edit"
+              data-id="{{ p.id }}" data-nome="{{ p.nome }}" data-email="{{ p.email }}" data-ativo="{{ p.ativo }}">Editar</button>
+            <button type="button" class="btn btn-ghost btn-sm btn-del danger" data-id="{{ p.id }}">Excluir</button>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="4" class="empty">Nenhum prestador cadastrado.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<dialog id="prestadorDialog" class="dialog">
+  <form id="formPrestador" class="dialog-inner" novalidate>
+    <header>
+      <h3 id="prestadorDialogTitle">Novo prestador</h3>
+      <button type="button" class="btn btn-ghost btn-sm" id="btnFecharPrestador" aria-label="Fechar">✕</button>
+    </header>
+    <input type="hidden" name="id" id="prestadorId">
+    <label class="field">
+      <span>Nome</span>
+      <input type="text" name="nome" id="prestadorNome" required autocomplete="name">
+    </label>
+    <label class="field">
+      <span>E-mail</span>
+      <input type="email" name="email" id="prestadorEmail" required autocomplete="email">
+    </label>
+    <label class="check-inline">
+      <input type="checkbox" name="ativo" id="prestadorAtivo" checked>
+      Ativo
+    </label>
+    <div class="actions-row">
+      <button type="button" class="btn btn-ghost" id="btnCancelarPrestador">Cancelar</button>
+      <button type="button" class="btn btn-primary" id="btnSalvarPrestador">Salvar</button>
+    </div>
+  </form>
+</dialog>
+{% endblock %}
+
+{% block scripts %}
+<script>window.PAGE = "prestadores";</script>
+{% endblock %}

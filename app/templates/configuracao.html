@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Conta de e-mail{% endblock %}
+{% block page_title %}Conta de e-mail{% endblock %}
+{% block page_desc %}
+<p class="muted">SMTP e identidade usados em todos os envios.</p>
+{% endblock %}
+
+{% block content %}
+<section class="panel narrow">
+  <form id="formConfig" class="form-grid">
+    <label class="field">
+      <span>Nome do remetente</span>
+      <input type="text" name="remetente_nome" value="{{ config.remetente_nome or '' }}" required>
+    </label>
+    <label class="field">
+      <span>E-mail do remetente</span>
+      <input type="email" name="remetente_email" value="{{ config.remetente_email or '' }}" required>
+    </label>
+    <label class="field">
+      <span>Servidor SMTP</span>
+      <input type="text" name="smtp_host" value="{{ config.smtp_host or 'smtp.gmail.com' }}" required>
+    </label>
+    <label class="field">
+      <span>Porta</span>
+      <input type="number" name="smtp_port" value="{{ config.smtp_port or 587 }}" required>
+    </label>
+    <label class="field">
+      <span>Usuário SMTP</span>
+      <input type="text" name="smtp_user" value="{{ config.smtp_user or '' }}" autocomplete="username">
+    </label>
+    <label class="field">
+      <span>Senha / App Password</span>
+      <input type="password" name="smtp_password" value="" placeholder="{% if config.smtp_password %}•••••••• (deixe em branco para manter){% else %}Senha SMTP{% endif %}" autocomplete="current-password">
+    </label>
+    <label class="check-inline field-full">
+      <input type="checkbox" name="usar_tls" {% if config.usar_tls %}checked{% endif %}>
+      Usar STARTTLS (porta 587)
+    </label>
+    <div class="actions-row field-full">
+      <button type="submit" class="btn btn-primary">Salvar configuração</button>
+    </div>
+  </form>
+  <p class="hint-box">
+    Para Gmail, use uma <strong>senha de app</strong> (não a senha da conta) e ative a verificação em duas etapas.
+  </p>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>window.PAGE = "config";</script>
+{% endblock %}

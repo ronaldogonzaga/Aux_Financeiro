@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% block title %}Enviar{% endblock %}
+{% block page_title %}Enviar relatórios{% endblock %}
+{% block page_desc %}
+<p class="muted">Escolha as pastas, analise os anexos encontrados e confirme o disparo.</p>
+{% endblock %}
+
+{% block content %}
+<section class="panel">
+  <h2 class="panel-title">Pastas do período</h2>
+  <p class="panel-hint">Clique em “Procurar” para navegar até a pasta. Os caminhos ficam salvos para o próximo uso.</p>
+
+  <div class="folder-pickers">
+    <div class="folder-card" data-folder="medico" id="cardMedico">
+      <div class="folder-card-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.75">
+          <path d="M3 7.5A1.5 1.5 0 0 1 4.5 6H9l2 2h8.5A1.5 1.5 0 0 1 21 9.5v8A1.5 1.5 0 0 1 19.5 19h-15A1.5 1.5 0 0 1 3 17.5v-10Z"/>
+        </svg>
+      </div>
+      <div class="folder-card-body">
+        <span class="folder-card-label">Pasta de Relatório Médico</span>
+        <strong class="folder-card-name" id="nome_medico">
+          {% if caminhos.pasta_relatorio_medico %}
+            {{ caminhos.pasta_relatorio_medico.split('\\')[-1].split('/')[-1] }}
+          {% else %}
+            Nenhuma pasta selecionada
+          {% endif %}
+        </strong>
+        <span class="folder-card-path {% if not caminhos.pasta_relatorio_medico %}is-empty{% endif %}" id="path_medico_display"
+              title="{{ caminhos.pasta_relatorio_medico or '' }}">
+          {{ caminhos.pasta_relatorio_medico or 'Ex.: …\\RELATÓRIO MÉDICO\\Pagamento 15-09-26' }}
+        </span>
+        <small>O nome da pasta deve conter o período, ex.: Pagamento 15-09-26</small>
+      </div>
+      <div class="folder-card-actions">
+        <button type="button" class="btn btn-secondary btn-browse" data-target="medico"
+                data-titulo="Selecionar pasta de Relatório Médico">Procurar</button>
+        <button type="button" class="btn btn-ghost btn-sm btn-clear-folder" data-target="medico"
+                {% if not caminhos.pasta_relatorio_medico %}hidden{% endif %}>Limpar</button>
+      </div>
+      <input type="hidden" id="pasta_medico" value="{{ caminhos.pasta_relatorio_medico or '' }}">
+    </div>
+
+    <div class="folder-card" data-folder="convenio" id="cardConvenio">
+      <div class="folder-card-icon accent" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.75">
+          <path d="M3 7.5A1.5 1.5 0 0 1 4.5 6H9l2 2h8.5A1.5 1.5 0 0 1 21 9.5v8A1.5 1.5 0 0 1 19.5 19h-15A1.5 1.5 0 0 1 3 17.5v-10Z"/>
+          <path d="M8 13h8M8 16h5"/>
+        </svg>
+      </div>
+      <div class="folder-card-body">
+        <span class="folder-card-label">Pasta Relatório de Convênios</span>
+        <strong class="folder-card-name" id="nome_convenio">
+          {% if caminhos.pasta_relatorio_convenio %}
+            {{ caminhos.pasta_relatorio_convenio.split('\\')[-1].split('/')[-1] }}
+          {% else %}
+            Nenhuma pasta selecionada
+          {% endif %}
+        </strong>
+        <span class="folder-card-path {% if not caminhos.pasta_relatorio_convenio %}is-empty{% endif %}" id="path_convenio_display"
+              title="{{ caminhos.pasta_relatorio_convenio or '' }}">
+          {{ caminhos.pasta_relatorio_convenio or 'Ex.: …\\RELATÓRIO CONVÊNIOS' }}
+        </span>
+        <small>Dentro dela, cada médico tem uma pasta com subpastas de pagamento.</small>
+      </div>
+      <div class="folder-card-actions">
+        <button type="button" class="btn btn-secondary btn-browse" data-target="convenio"
+                data-titulo="Selecionar pasta de Relatório de Convênios">Procurar</button>
+        <button type="button" class="btn btn-ghost btn-sm btn-clear-folder" data-target="convenio"
+                {% if not caminhos.pasta_relatorio_convenio %}hidden{% endif %}>Limpar</button>
+      </div>
+      <input type="hidden" id="pasta_convenio" value="{{ caminhos.pasta_relatorio_convenio or '' }}">
+    </div>
+  </div>
+
+  <div class="actions-row">
+    <button type="button" class="btn btn-primary" id="btnPreview">
+      Analisar anexos
+    </button>
+    <span class="meta-pill">{{ total_prestadores }} prestador(es) ativo(s)</span>
+  </div>
+</section>
+
+<section class="panel" id="previewPanel" hidden>
+  <div class="panel-head">
+    <div>
+      <h2 class="panel-title">Validação dos anexos</h2>
+      <p class="panel-hint" id="previewSummary"></p>
+    </div>
+    <div class="actions-row compact">
+      <label class="check-inline">
+        <input type="checkbox" id="chkTodos" checked>
+        Selecionar todos com anexo
+      </label>
+      <button type="button" class="btn btn-accent" id="btnEnviar" disabled>
+        Confirmar e enviar
+      </button>
+    </div>
+  </div>
+
+  <div id="envioProgress" class="progress-box" hidden>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    <p id="progressText" class="muted"></p>
+  </div>
+
+  <div class="table-wrap">
+    <table class="data-table" id="previewTable">
+      <thead>
+        <tr>
+          <th style="width:40px"></th>
+          <th>Prestador</th>
+          <th>E-mail</th>
+          <th>Anexos</th>
+          <th>Status</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</section>
+
+<dialog id="anexosDialog" class="dialog">
+  <form method="dialog" class="dialog-inner">
+    <header>
+      <h3 id="dialogTitle">Anexos</h3>
+      <button type="submit" class="btn btn-ghost btn-sm" value="close">Fechar</button>
+    </header>
+    <ul id="dialogList" class="anexo-list"></ul>
+    <div id="dialogAvisos" class="avisos"></div>
+  </form>
+</dialog>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  window.PAGE = "envio";
+</script>
+{% endblock %}

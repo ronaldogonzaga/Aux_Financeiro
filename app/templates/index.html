@@ -1,0 +1,228 @@
+{% extends "base.html" %}
+{% block title %}Início{% endblock %}
+{% block page_title %}Início{% endblock %}
+{% block page_desc %}
+<p class="muted">Visão geral do cadastro, prontidão e últimos envios.</p>
+{% endblock %}
+{% block header_actions %}
+<a href="{{ url_for('main.pagina_envio') }}" class="btn btn-accent">Preparar envio</a>
+{% endblock %}
+
+{% block content %}
+{% set d = dash %}
+
+{% if envio_estado.em_andamento %}
+<section class="dash-live" id="dashLive">
+  <div class="dash-live-pulse"></div>
+  <div>
+    <strong>Envio em andamento</strong>
+    <p class="muted" id="dashLiveText">Processando lote #{{ envio_estado.envio_id }}…</p>
+  </div>
+  <a href="{{ url_for('main.pagina_envio') }}" class="btn btn-secondary btn-sm">Acompanhar</a>
+</section>
+{% endif %}
+
+<section class="kpi-grid">
+  <article class="kpi">
+    <span class="kpi-label">Prestadores ativos</span>
+    <strong class="kpi-value">{{ d.prestadores_ativos }}</strong>
+    <span class="kpi-meta">{{ d.prestadores_total }} no cadastro{% if d.prestadores_inativos %} · {{ d.prestadores_inativos }} inativo(s){% endif %}</span>
+  </article>
+  <article class="kpi">
+    <span class="kpi-label">E-mails enviados</span>
+    <strong class="kpi-value">{{ d.emails_enviados }}</strong>
+    <span class="kpi-meta">{{ d.enviados_30d }} nos últimos 30 dias</span>
+  </article>
+  <article class="kpi">
+    <span class="kpi-label">Taxa de sucesso</span>
+    <strong class="kpi-value">{% if d.taxa_sucesso is not none %}{{ d.taxa_sucesso }}%{% else %}—{% endif %}</strong>
+    <span class="kpi-meta">{% if d.emails_falha %}{{ d.emails_falha }} falha(s) no total{% else %}Sem falhas registradas{% endif %}</span>
+  </article>
+  <article class="kpi">
+    <span class="kpi-label">Lotes de envio</span>
+    <strong class="kpi-value">{{ d.lotes_total }}</strong>
+    <span class="kpi-meta">{{ d.lotes_30d }} nos últimos 30 dias</span>
+  </article>
+</section>
+
+<div class="dash-layout">
+  <section class="panel dash-main">
+    <div class="panel-head">
+      <div>
+        <h2 class="panel-title">Prontidão para envio</h2>
+        <p class="panel-hint">{{ d.prontidao.ok }}/{{ d.prontidao.total }} itens prontos</p>
+      </div>
+      <div class="prontidao-ring {% if d.prontidao.completo %}ok{% endif %}"
+           style="--pct: {{ (d.prontidao.ok / d.prontidao.total * 100)|round|int }}">
+        <span>{{ d.prontidao.ok }}/{{ d.prontidao.total }}</span>
+      </div>
+    </div>
+
+    <ul class="checklist">
+      {% for item in d.checklist %}
+      <li class="{% if item.ok %}done{% else %}todo{% endif %}">
+        <span class="check-mark">{% if item.ok %}✓{% else %}!{% endif %}</span>
+        <span class="check-label">{{ item.label }}</span>
+        {% if not item.ok %}
+          {% if item.href == 'configuracao' %}
+            <a href="{{ url_for('main.pagina_configuracao') }}">Configurar</a>
+          {% elif item.href == 'template' %}
+            <a href="{{ url_for('main.pagina_template') }}">Abrir</a>
+          {% elif item.href == 'prestadores' %}
+            <a href="{{ url_for('main.pagina_prestadores') }}">Cadastrar</a>
+          {% else %}
+            <a href="{{ url_for('main.pagina_envio') }}">Definir</a>
+          {% endif %}
+        {% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+
+    {% if d.prontidao.completo %}
+    <div class="ready-banner">
+      Tudo pronto. Você pode analisar anexos e disparar o lote.
+      <a href="{{ url_for('main.pagina_envio') }}" class="btn btn-primary btn-sm">Ir para envio</a>
+    </div>
+    {% endif %}
+  </section>
+
+  <aside class="dash-side">
+    <section class="panel">
+      <h2 class="panel-title">Atalhos</h2>
+      <div class="shortcut-list">
+        <a href="{{ url_for('main.pagina_envio') }}" class="shortcut">
+          <span class="shortcut-ico">✉</span>
+          <span><strong>Enviar</strong><small>Pastas, análise e disparo</small></span>
+        </a>
+        <a href="{{ url_for('main.pagina_prestadores') }}" class="shortcut">
+          <span class="shortcut-ico">♟</span>
+          <span><strong>Prestadores</strong><small>Cadastro e importação</small></span>
+        </a>
+        <a href="{{ url_for('main.pagina_historico') }}" class="shortcut">
+          <span class="shortcut-ico">◷</span>
+          <span><strong>Histórico</strong><small>Consultar lotes anteriores</small></span>
+        </a>
+        <a href="{{ url_for('main.pagina_configuracao') }}" class="shortcut">
+          <span class="shortcut-ico">⚙</span>
+          <span><strong>Conta de e-mail</strong><small>SMTP e remetente</small></span>
+        </a>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2 class="panel-title">Contexto atual</h2>
+      <dl class="context-dl">
+        <div>
+          <dt>Remetente</dt>
+          <dd>{% if d.config.remetente %}{{ d.config.remetente }}{% else %}<span class="muted">Não configurado</span>{% endif %}</dd>
+        </div>
+        <div>
+          <dt>Assunto</dt>
+          <dd>{% if d.template_assunto %}{{ d.template_assunto }}{% else %}<span class="muted">—</span>{% endif %}</dd>
+        </div>
+        <div>
+          <dt>Cópia (CCO)</dt>
+          <dd>{% if d.enviar_copia %}Ativada{% else %}Desligada{% endif %}</dd>
+        </div>
+        <div>
+          <dt>Período detectado</dt>
+          <dd>{% if periodo %}<span class="meta-pill">{{ periodo }}</span>{% else %}<span class="muted">Informe a pasta de pagamento</span>{% endif %}</dd>
+        </div>
+        <div>
+          <dt>Pasta médico</dt>
+          <dd class="path-dd {% if d.caminhos.pasta_medico_ok %}ok{% elif d.caminhos.pasta_medico %}warn{% endif %}">
+            {{ d.caminhos.pasta_medico or '—' }}
+          </dd>
+        </div>
+        <div>
+          <dt>Pasta convênios</dt>
+          <dd class="path-dd {% if d.caminhos.pasta_convenio_ok %}ok{% elif d.caminhos.pasta_convenio %}warn{% endif %}">
+            {{ d.caminhos.pasta_convenio or '—' }}
+          </dd>
+        </div>
+      </dl>
+    </section>
+  </aside>
+</div>
+
+{% if d.ultimo_envio %}
+<section class="panel last-envio">
+  <div class="panel-head">
+    <div>
+      <h2 class="panel-title">Último envio</h2>
+      <p class="panel-hint">#{{ d.ultimo_envio.id }} · {{ d.ultimo_envio.iniciado_em }}{% if d.ultimo_envio.periodo_pagamento %} · {{ d.ultimo_envio.periodo_pagamento }}{% endif %}</p>
+    </div>
+    <span class="badge status-{{ d.ultimo_envio.status }}">{{ d.ultimo_envio.status }}</span>
+  </div>
+  <div class="last-envio-stats">
+    <div><strong>{{ d.ultimo_envio.total_destinatarios }}</strong><span>Destinatários</span></div>
+    <div><strong>{{ d.ultimo_envio.total_enviados }}</strong><span>Enviados</span></div>
+    <div><strong>{{ d.ultimo_envio.total_falhas }}</strong><span>Falhas</span></div>
+  </div>
+  <a href="{{ url_for('main.pagina_historico_detalhe', envio_id=d.ultimo_envio.id) }}" class="btn btn-ghost btn-sm">Ver detalhes</a>
+</section>
+{% endif %}
+
+<div class="dash-two">
+  <section class="panel">
+    <div class="panel-head">
+      <h2 class="panel-title">Envios recentes</h2>
+      <a href="{{ url_for('main.pagina_historico') }}" class="btn btn-ghost btn-sm">Ver todos</a>
+    </div>
+    {% if d.envios_recentes %}
+    <div class="table-wrap">
+      <table class="data-table compact">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Data</th>
+            <th>Período</th>
+            <th>OK</th>
+            <th>Falhas</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for e in d.envios_recentes %}
+          <tr>
+            <td><a href="{{ url_for('main.pagina_historico_detalhe', envio_id=e.id) }}">{{ e.id }}</a></td>
+            <td>{{ e.iniciado_em }}</td>
+            <td>{{ e.periodo_pagamento or '—' }}</td>
+            <td>{{ e.total_enviados }}</td>
+            <td>{{ e.total_falhas }}</td>
+            <td><span class="badge status-{{ e.status }}">{{ e.status }}</span></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <p class="empty-soft">Nenhum envio ainda. Comece preparando um lote.</p>
+    {% endif %}
+  </section>
+
+  <section class="panel">
+    <h2 class="panel-title">Falhas recentes</h2>
+    {% if d.falhas_recentes %}
+    <ul class="fail-list">
+      {% for f in d.falhas_recentes %}
+      <li>
+        <div>
+          <strong>{{ f.prestador_nome }}</strong>
+          <span class="muted">{{ f.prestador_email }}</span>
+        </div>
+        <p class="fail-erro">{{ f.erro or 'Erro não informado' }}</p>
+        <a href="{{ url_for('main.pagina_historico_detalhe', envio_id=f.envio_id) }}">Lote #{{ f.envio_id }}</a>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="empty-soft">Nenhuma falha registrada. Ótimo sinal.</p>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>window.PAGE = "dashboard";</script>
+{% endblock %}

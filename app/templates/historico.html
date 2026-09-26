@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Histórico{% endblock %}
+{% block page_title %}Histórico de envios{% endblock %}
+{% block page_desc %}
+<p class="muted">Consulte lotes enviados e o status de cada destinatário.</p>
+{% endblock %}
+
+{% block content %}
+<section class="panel">
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Início</th>
+          <th>Período</th>
+          <th>Destinatários</th>
+          <th>Enviados</th>
+          <th>Falhas</th>
+          <th>Status</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for e in envios %}
+        <tr>
+          <td>{{ e.id }}</td>
+          <td>{{ e.iniciado_em }}</td>
+          <td>{{ e.periodo_pagamento or '—' }}</td>
+          <td>{{ e.total_destinatarios }}</td>
+          <td>{{ e.total_enviados }}</td>
+          <td>{{ e.total_falhas }}</td>
+          <td><span class="badge status-{{ e.status }}">{{ e.status }}</span></td>
+          <td><a class="btn btn-ghost btn-sm" href="{{ url_for('main.pagina_historico_detalhe', envio_id=e.id) }}">Detalhes</a></td>
+        </tr>
+        {% else %}
+        <tr><td colspan="8" class="empty">Nenhum envio registrado ainda.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

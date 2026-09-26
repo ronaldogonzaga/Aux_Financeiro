@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Modelo de e-mail{% endblock %}
+{% block page_title %}Modelo de e-mail{% endblock %}
+{% block page_desc %}
+<p class="muted">Assunto e corpo padrão. Use <code>{% raw %}{{nome}}{% endraw %}</code> para o nome do médico.</p>
+{% endblock %}
+
+{% block content %}
+<section class="panel narrow">
+  <form id="formTemplate" class="form-grid">
+    <label class="field field-full">
+      <span>Assunto</span>
+      <input type="text" name="assunto" value="{{ template.assunto or '' }}" required>
+    </label>
+    <label class="field field-full">
+      <span>Corpo do e-mail</span>
+      <textarea name="corpo" rows="12" required>{{ template.corpo or '' }}</textarea>
+    </label>
+    <label class="check-inline field-full">
+      <input type="checkbox" name="enviar_copia" {% if template.enviar_copia %}checked{% endif %}>
+      Enviar cópia para mim (CCO no remetente)
+    </label>
+    <div class="actions-row field-full">
+      <button type="submit" class="btn btn-primary">Salvar template</button>
+    </div>
+  </form>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>window.PAGE = "template";</script>
+{% endblock %}

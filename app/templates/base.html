@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Aux_Financeiro{% endblock %} · Envio de Relatórios</title>
+  <link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <span class="brand-mark">A</span>
+        <div>
+          <strong class="brand-name">Aux_Financeiro</strong>
+          <span class="brand-sub">Relatórios Médicos</span>
+        </div>
+      </div>
+      <nav class="nav" aria-label="Menu principal">
+        <div class="nav-group">
+          <span class="nav-group-label">Operação</span>
+          <a href="{{ url_for('main.index') }}" class="nav-link {% if request.endpoint == 'main.index' %}active{% endif %}">
+            <span class="nav-ico" aria-hidden="true">▣</span> Início
+          </a>
+          <a href="{{ url_for('main.pagina_envio') }}" class="nav-link {% if request.endpoint == 'main.pagina_envio' %}active{% endif %}">
+            <span class="nav-ico" aria-hidden="true">✉</span> Enviar
+          </a>
+          <a href="{{ url_for('main.pagina_historico') }}" class="nav-link {% if request.endpoint and 'historico' in request.endpoint %}active{% endif %}">
+            <span class="nav-ico" aria-hidden="true">◷</span> Histórico
+          </a>
+        </div>
+        <div class="nav-group">
+          <span class="nav-group-label">Cadastros</span>
+          <a href="{{ url_for('main.pagina_prestadores') }}" class="nav-link {% if request.endpoint == 'main.pagina_prestadores' %}active{% endif %}">
+            <span class="nav-ico" aria-hidden="true">♟</span> Prestadores
+          </a>
+          <a href="{{ url_for('main.pagina_template') }}" class="nav-link {% if request.endpoint == 'main.pagina_template' %}active{% endif %}">
+            <span class="nav-ico" aria-hidden="true">✎</span> Modelo de e-mail
+          </a>
+        </div>
+        <div class="nav-group">
+          <span class="nav-group-label">Sistema</span>
+          <a href="{{ url_for('main.pagina_configuracao') }}" class="nav-link {% if request.endpoint == 'main.pagina_configuracao' %}active{% endif %}">
+            <span class="nav-ico" aria-hidden="true">⚙</span> Conta de e-mail
+          </a>
+        </div>
+      </nav>
+      <div class="sidebar-foot">
+        <span>Uso local · SQLite</span>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="page-header">
+        <div>
+          <h1>{% block page_title %}Início{% endblock %}</h1>
+          {% block page_desc %}<p class="muted">Visão geral do cadastro e envios.</p>{% endblock %}
+        </div>
+        {% block header_actions %}{% endblock %}
+      </header>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <div class="flash-stack">
+            {% for cat, msg in messages %}
+              <div class="flash flash-{{ cat }}">{{ msg }}</div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
+
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+
+  <div id="toast" class="toast" hidden></div>
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

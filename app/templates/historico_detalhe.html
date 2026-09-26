@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Envio #{{ envio.id }}{% endblock %}
+{% block page_title %}Envio #{{ envio.id }}{% endblock %}
+{% block page_desc %}
+<p class="muted">
+  {{ envio.iniciado_em }}
+  {% if envio.periodo_pagamento %} · Período {{ envio.periodo_pagamento }}{% endif %}
+  · <span class="badge status-{{ envio.status }}">{{ envio.status }}</span>
+</p>
+{% endblock %}
+{% block header_actions %}
+<a href="{{ url_for('main.pagina_historico') }}" class="btn btn-secondary">Voltar</a>
+{% endblock %}
+
+{% block content %}
+<section class="panel stats-row">
+  <div class="stat"><span class="stat-n">{{ envio.total_destinatarios }}</span><span class="stat-l">Destinatários</span></div>
+  <div class="stat"><span class="stat-n">{{ envio.total_enviados }}</span><span class="stat-l">Enviados</span></div>
+  <div class="stat"><span class="stat-n">{{ envio.total_falhas }}</span><span class="stat-l">Falhas</span></div>
+</section>
+
+<section class="panel">
+  {% if envio.pasta_medico %}
+  <p class="muted path-line"><strong>Médico:</strong> {{ envio.pasta_medico }}</p>
+  {% endif %}
+  {% if envio.pasta_convenio %}
+  <p class="muted path-line"><strong>Convênios:</strong> {{ envio.pasta_convenio }}</p>
+  {% endif %}
+
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Prestador</th>
+          <th>E-mail</th>
+          <th>Anexos</th>
+          <th>Status</th>
+          <th>Enviado em</th>
+          <th>Erro</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for i in envio.itens %}
+        <tr>
+          <td>{{ i.prestador_nome }}</td>
+          <td>{{ i.prestador_email }}</td>
+          <td>
+            <details>
+              <summary>{{ i.qtd_anexos }} arquivo(s)</summary>
+              <ul class="anexo-list compact">
+                {% for a in i.anexos %}
+                <li>{{ a.nome }} <span class="muted">({{ a.tipo }})</span></li>
+                {% endfor %}
+              </ul>
+            </details>
+          </td>
+          <td><span class="badge status-{{ i.status }}">{{ i.status }}</span></td>
+          <td>{{ i.enviado_em or '—' }}</td>
+          <td class="erro-cell">{{ i.erro or '' }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}
